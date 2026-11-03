@@ -1,0 +1,3 @@
+- insert:
+    - id: session-meta
+      name: dsh-session-meta

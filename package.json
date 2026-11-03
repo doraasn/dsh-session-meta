@@ -1,0 +1,56 @@
+{
+  "name": "dsh-session-meta",
+  "version": "0.1.0",
+  "description": "DSH 插件「会话概览」：鼠标悬停侧栏会话时，显示创建时间、结束时间、涉及模型与累计 token。",
+  "type": "module",
+  "license": "MIT",
+  "author": "Y77H",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "session",
+    "sidebar",
+    "tokens"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doraasn/dsh-session-meta.git"
+  },
+  "homepage": "https://github.com/doraasn/dsh-session-meta#readme",
+  "bugs": {
+    "url": "https://github.com/doraasn/dsh-session-meta/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.2"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Session Overview",
+    "description": "On hovering a session in the sidebar, shows when it was created, when it ended, which models it used and the total tokens."
+  }
+}
