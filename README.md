@@ -10,8 +10,11 @@ Token  1.23M
 ```
 
 - **创建 / 结束**：会话头里的 `createdAt` 与日志里最后一条事件的时间。
-- **模型**：会话里出现过的模型（`assistant/message` 的 provider/model），括号里的调用次数在悬浮提示里。
-- **Token**：所有模型调用 `usage` 的累计值；悬浮提示给出输入 / 输出 / 缓存命中的精确数字。
+- **模型**：会话里出现过的模型（`assistant/message` 的 provider/model），悬浮该行用 HoverCard 显示每个 `供应商/模型` 的调用次数。
+- **Token**：所有模型调用 `usage` 的累计值；悬浮该行用 HoverCard 显示输入 / 缓存命中 / 输出 / 合计的精确数字。
+
+界面全部使用 `dsh-plugin-dev` 的 client-ui kit（v3）：行用 `InfoRow`、明细浮层用 `HoverCard`、颜色与字号走 `T` / `TYPE`，`client.js` 里内联一份 kit，不另写样式。
+
 
 ## 数据来源与口径
 
