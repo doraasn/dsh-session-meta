@@ -20,7 +20,7 @@ window.__ModuleLoader__.load({
     }
 
 /**
- * DSH 客户端 UI kit v3（2026-11-05，控件字号 14px）—— 整段粘进 `lib/client.js` 的 factory 里（`const react = require('react')` 之后）。
+ * DSH 客户端 UI kit v3（2026-11-05，字号按官方 10/11/12/13/15 档）—— 整段粘进 `lib/client.js` 的 factory 里（`const react = require('react')` 之后）。
  *
  * 为什么是"粘贴"而不是 import：插件的浏览器 bundle 由宿主按单文件 `/plugins/<id>/client.js`
  * 提供，没有打包器，`import './ui.js'` 在浏览器里跑不起来。所以公用组件以「可粘贴的片段」分发。
@@ -52,10 +52,10 @@ function createUi(react, createPortal) {
   }
   const CARD_BG = 'color-mix(in srgb, currentColor 6%, transparent)'
   const TYPE = {
-    h1: { fontSize: 18, fontWeight: 600, lineHeight: '26px', color: T.text1 },
+    h1: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1 },
     h2: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1 },
-    body: { fontSize: 14, lineHeight: '22px', color: T.text1 },
-    secondary: { fontSize: 14, lineHeight: '22px', color: T.text2 },
+    body: { fontSize: 13, lineHeight: '20px', color: T.text1 },
+    secondary: { fontSize: 13, lineHeight: '20px', color: T.text2 },
     small: { fontSize: 12, lineHeight: '18px', color: T.text2 },
     micro: { fontSize: 11, lineHeight: '14px', color: T.text2 },
     num: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1, fontVariantNumeric: 'tabular-nums' },
@@ -215,7 +215,7 @@ function createUi(react, createPortal) {
     style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minWidth: 0 },
   },
   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 } },
-    h('span', { style: { fontSize: 14, lineHeight: '20px', color: T.text1 } }, label),
+    h('span', { style: { fontSize: 13, lineHeight: '20px', color: T.text1 } }, label),
     hint ? h('span', { style: { fontSize: 11, lineHeight: '16px', color: T.text2 } }, hint) : null),
   children)
 
@@ -268,8 +268,8 @@ function createUi(react, createPortal) {
       flex: 'none',
       cursor: disabled ? 'default' : 'pointer',
       opacity: disabled ? 0.6 : 1,
-      fontSize: 14,
-      lineHeight: '22px',
+      fontSize: 13,
+      lineHeight: '20px',
       fontWeight: 500,
       ...(variant === 'primary'
         ? { border: 'none', background: T.accent, color: T.accentText }
@@ -333,7 +333,7 @@ function createUi(react, createPortal) {
           outline: 'none',
           background: 'transparent',
           color: T.text1,
-          fontSize: 14,
+          fontSize: 13,
           lineHeight: '20px',
           padding: 0,
         },
@@ -420,7 +420,7 @@ function createUi(react, createPortal) {
       border: `.5px solid ${T.cardStroke}`,
       background: T.inputFill,
       color: T.text1,
-      fontSize: 14,
+      fontSize: 13,
       lineHeight: '20px',
       cursor: disabled ? 'default' : 'pointer',
       textAlign: 'left',
@@ -475,7 +475,7 @@ function createUi(react, createPortal) {
           height: 32,
           padding: '0 10px',
           borderRadius: 8,
-          fontSize: 14,
+          fontSize: 13,
           lineHeight: '20px',
           color: T.text1,
           cursor: 'pointer',
@@ -519,7 +519,7 @@ function createUi(react, createPortal) {
           border: 'none',
           borderRadius: 9,
           cursor: 'pointer',
-          fontSize: 14,
+          fontSize: 13,
           lineHeight: '20px',
           background: active ? T.accent : 'transparent',
           color: active ? T.accentText : T.text2,
@@ -556,7 +556,7 @@ function createUi(react, createPortal) {
     style: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 96 },
   },
   h('span', { style: TYPE.micro }, label),
-  h('span', { style: { ...TYPE.num, fontSize: 17, lineHeight: '22px' } }, value),
+  h('span', { style: { ...TYPE.num } }, value),
   hint ? h('span', { style: TYPE.micro }, hint) : null)
 
   /** 空态：居中提示，不占空容器。 */
