@@ -20,7 +20,7 @@ window.__ModuleLoader__.load({
     }
 
 /**
- * DSH 客户端 UI kit v3（2026-11-05，字号按官方 10/11/12/13/15 档）—— 整段粘进 `lib/client.js` 的 factory 里（`const react = require('react')` 之后）。
+ * DSH 客户端 UI kit v4（2026-11-06，按官方设置页分区头 18/13 对齐）—— 整段粘进 `lib/client.js` 的 factory 里（`const react = require('react')` 之后）。
  *
  * 为什么是"粘贴"而不是 import：插件的浏览器 bundle 由宿主按单文件 `/plugins/<id>/client.js`
  * 提供，没有打包器，`import './ui.js'` 在浏览器里跑不起来。所以公用组件以「可粘贴的片段」分发。
@@ -52,10 +52,12 @@ function createUi(react, createPortal) {
   }
   const CARD_BG = 'color-mix(in srgb, currentColor 6%, transparent)'
   const TYPE = {
-    h1: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1 },
+    /* 官方设置页分区头：标题 18/600，说明 13 弱色（宿主 PluginsSettingsSection.css） */
+    h1: { fontSize: 18, fontWeight: 600, lineHeight: '26px', color: T.text1 },
     h2: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1 },
     body: { fontSize: 13, lineHeight: '20px', color: T.text1 },
     secondary: { fontSize: 13, lineHeight: '20px', color: T.text2 },
+    intro: { fontSize: 13, lineHeight: '20px', color: T.text3 },
     small: { fontSize: 12, lineHeight: '18px', color: T.text2 },
     micro: { fontSize: 11, lineHeight: '14px', color: T.text2 },
     num: { fontSize: 15, fontWeight: 600, lineHeight: '20px', color: T.text1, fontVariantNumeric: 'tabular-nums' },
@@ -187,12 +189,12 @@ function createUi(react, createPortal) {
   }, children)
 
   /* ---------- 设置页 ---------- */
+  /* 官方分区结构：flex column gap 12，h2 标题 + p 说明（说明 13 弱色），下面才是内容 */
   const Section = ({ title, description, children }) => h('div', {
     style: { display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640, minWidth: 0 },
   },
-  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 } },
-    h('span', { style: TYPE.h1 }, title),
-    description ? h('span', { style: TYPE.secondary }, description) : null),
+  h('h2', { style: { margin: 0, ...TYPE.h1 } }, title),
+  description ? h('p', { style: { margin: 0, ...TYPE.intro } }, description) : null,
   children)
 
   /** 设置卡片：官方那种 20px 圆角、深色填充、细描边。 */
@@ -295,7 +297,7 @@ function createUi(react, createPortal) {
     onEnter,
   }) => {
     const [focused, setFocused] = useState(false)
-    const border = invalid ? '#ff6262' : focused ? T.text3 : T.cardStroke
+    const border = invalid ? 'var(--dsw-alias-state-error-primary, #ff6262)' : focused ? T.text3 : T.cardStroke
     return h('div', {
       style: {
         width,
