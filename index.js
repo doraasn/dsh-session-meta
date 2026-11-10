@@ -15,6 +15,39 @@ const STAT_PATH = `${ROUTE_PREFIX}/api/stat`;
 
 export const inject = ['webServer'];
 
+/**
+ * 路由没有会话校验，所以只信任「本机回环 Host + 同源 Origin」：
+ * Host 挡 DNS rebinding（攻击者域解析到 127.0.0.1 后 Host 仍是攻击者域），
+ * Origin 挡任意网页的跨站请求。隧道代理会把这两个头重写成上游地址。
+ */
+function isLoopbackHost(hostHeader) {
+  if (!hostHeader) return false;
+  const host = String(hostHeader).trim().toLowerCase();
+  const name = host.startsWith('[') ? host.slice(0, host.indexOf(']') + 1) : host.replace(/:\d+$/, '');
+  return name === '127.0.0.1' || name === 'localhost' || name === '[::1]' || name === '::1';
+}
+
+function isSameOrigin(originHeader, selfOrigin) {
+  const origin = String(originHeader || '').trim()
+  if (!origin) return true // 非浏览器客户端（curl / 测试）不带 Origin
+  if (origin === 'null') return false // file:// 或 sandbox iframe
+  let parsed
+  try {
+    parsed = new URL(origin)
+  } catch {
+    return false
+  }
+  // 只放行回环来源：localhost 与 127.0.0.1 视为同一个服务（端口必须一致）。
+  // evil.example 即使解析到 127.0.0.1，Origin 仍是它自己的域名，过不了这一关。
+  if (!/^https?:$/.test(parsed.protocol) || !isLoopbackHost(parsed.host)) return false
+  if (!selfOrigin) return true
+  try {
+    return new URL(selfOrigin).port === parsed.port
+  } catch {
+    return false
+  }
+}
+
 /** 取数字，非法值按 0 处理。 */
 function num(value) {
   const parsed = Number(value);
@@ -139,12 +172,25 @@ export function apply(ctx) {
     path: ROUTE_PREFIX,
     handler: async (req, res) => {
       const url = new URL(req.url || '/', 'http://localhost');
+      const selfOrigin = (() => {
+        try { return new URL(ctx.webServer.getOrigin?.() ?? '').origin; } catch { return ''; }
+      })();
+      // 会话统计虽然不含正文，但能画出「跑什么模型、花多少 token、什么时候活跃」；
+      // 路由本身没有会话校验，所以只信任本机回环 + 同源。
+      if (!isLoopbackHost(req.headers?.host)) {
+        sendJson(res, 403, { error: 'forbidden-host' });
+        return;
+      }
+      if (!isSameOrigin(req.headers?.origin, selfOrigin)) {
+        sendJson(res, 403, { error: 'forbidden-origin' });
+        return;
+      }
       if (url.pathname !== STAT_PATH) {
         sendJson(res, 404, { error: 'not-found' });
         return;
       }
       const sessionId = url.searchParams.get('session') || '';
-      if (!/^[A-Za-z0-9._-]{1,128}$/.test(sessionId)) {
+      if (!/^[A-Za-z0-9._-]{1,128}$/.test(sessionId) || sessionId === '.' || sessionId === '..') {
         sendJson(res, 400, { error: 'bad-session-id' });
         return;
       }
@@ -155,11 +201,9 @@ export function apply(ctx) {
       }
       try {
         sendJson(res, 200, await statOf(query, sessionId));
-      } catch (error) {
-        sendJson(res, 404, {
-          error: 'unreadable-session',
-          message: String(error?.message || error),
-        });
+      } catch {
+        // 不回显底层错误：避免把「会话是否存在」和内部路径变成探测口。
+        sendJson(res, 404, { error: 'unreadable-session' });
       }
     },
   });
