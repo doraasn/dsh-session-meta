@@ -13,6 +13,8 @@ Token  1.23M
 - **模型**：会话里出现过的模型（`assistant/message` 的 provider/model），悬浮该行用 HoverCard 显示每个 `供应商/模型` 的调用次数。
 - **Token**：所有模型调用 `usage` 的累计值；悬浮该行用 HoverCard 显示输入 / 缓存命中 / 输出 / 合计的精确数字。
 
+明细行同时支持**点击/回车（触屏与键盘）**：没有 hover 时点击行内展开同一份明细，再点一次收起，不依赖浮层。
+
 界面全部使用 `dsh-plugin-dev` 的 client-ui kit（v4）：行用 `InfoRow`、明细浮层用 `HoverCard`、颜色与字号走 `T` / `TYPE`，`client.js` 里内联一份 kit，不另写样式。
 
 

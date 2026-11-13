@@ -212,13 +212,13 @@ function createUi(react, createPortal) {
     },
   }, children)
 
-  /** 左标签 + 右控件的一行。 */
+  /** 左标签 + 右控件的一行。副标签行高与 TYPE.micro 对齐（11/14），复用行高就不会差 2px。 */
   const SettingRow = ({ label, hint, children }) => h('div', {
     style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minWidth: 0 },
   },
   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 } },
-    h('span', { style: { fontSize: 13, lineHeight: '20px', color: T.text1 } }, label),
-    hint ? h('span', { style: { fontSize: 11, lineHeight: '16px', color: T.text2 } }, hint) : null),
+    h('span', { style: TYPE.body }, label),
+    hint ? h('span', { style: { ...TYPE.micro, ...TYPE.ellipsis } }, hint) : null),
   children)
 
   /** 药丸开关：36×20，白色底 + 深色旋钮，与官方设置页一致。 */
@@ -677,8 +677,10 @@ function createUi(react, createPortal) {
         function SessionMeta(props) {
           const sessionId = props?.sessionId;
           const [state, setState] = React.useState({ status: 'loading' });
-          /** 悬浮明细：{ kind: 'models' | 'tokens', rect }，用 kit 的 HoverCard 呈现。 */
+          /** 明细：{ kind: 'models' | 'tokens', rect }，用 kit 的 HoverCard 呈现。 */
           const [detail, setDetail] = React.useState(null);
+          /** 点击/回车钉住的明细 kind：触屏没有 hover，靠它提供等价入口。 */
+          const [pinned, setPinned] = React.useState(null);
 
           React.useEffect(() => {
             if (!sessionId) return undefined;
@@ -720,17 +722,14 @@ function createUi(react, createPortal) {
             ? '—'
             : `${data.modelCount ?? names.length}${labels.count}${labels.count ? ' · ' : ' '}${shown}${rest}`;
 
-          /** 明细卡内容：模型调用次数 / token 精确分解。 */
-          const detailRows = () => {
-            if (!detail) return null;
-            if (detail.kind === 'models') {
-              return [
-                ...models.map((item, index) => h(InfoRow, {
-                  key: `m${index}`,
-                  label: item.provider ? `${item.provider}/${item.model}` : item.model,
-                  value: `${item.calls} ${labels.calls}`,
-                })),
-              ];
+          /** 明细内容：模型调用次数 / token 精确分解。 */
+          const detailRows = (kind) => {
+            if (kind === 'models') {
+              return models.map((item, index) => h(InfoRow, {
+                key: `m${index}`,
+                label: item.provider ? `${item.provider}/${item.model}` : item.model,
+                value: `${item.calls} ${labels.calls}`,
+              }));
             }
             return [
               h(InfoRow, { key: 'total', label: labels.tokens, value: exactTokens(tokens.total) }),
@@ -740,32 +739,71 @@ function createUi(react, createPortal) {
             ];
           };
 
-          /** 可悬浮出明细的一行：把 InfoRow 包一层，只挂鼠标事件与 rect 采集。 */
+          /** 明细内容块：浮层与点击后的行内展开共用同一份。 */
+          const detailBody = (kind, extraStyle) => h('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, ...extraStyle },
+          },
+          h('span', { style: TYPE.h2 }, kind === 'models' ? labels.models : labels.breakdown),
+          ...detailRows(kind));
+
+          /** 打开/切换某一行明细；rect 用触发行的实测位置，交给 kit 的 placeNear 夹取。 */
+          const toggleDetail = (kind, node) => {
+            if (pinned === kind) {
+              setPinned(null);
+              setDetail(null);
+              return;
+            }
+            setPinned(kind);
+            setDetail({ kind, rect: node.getBoundingClientRect() });
+          };
+
+          /**
+           * 可查看明细的一行：鼠标 hover 预览，点击/回车钉住。
+           * 触屏没有 hover，点击是等价入口；触点按规范给到 32px 高。
+           */
           const detailRow = (kind, label, value) => h('div', {
             key: kind,
-            style: { minWidth: 0, cursor: 'default' },
-            onMouseEnter: (event) => {
-              const rect = event.currentTarget.getBoundingClientRect();
-              setDetail({ kind, rect });
+            role: 'button',
+            tabIndex: 0,
+            'aria-expanded': Boolean(detail && detail.kind === kind),
+            style: {
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: 0,
+              minHeight: 32,
+              cursor: 'pointer',
             },
-            onMouseLeave: () => setDetail(null),
-          }, h(InfoRow, { label, value }));
+            onMouseEnter: (event) => {
+              if (!pinned) setDetail({ kind, rect: event.currentTarget.getBoundingClientRect() });
+            },
+            onMouseLeave: () => {
+              if (!pinned) setDetail(null);
+            },
+            onClick: (event) => toggleDetail(kind, event.currentTarget),
+            onKeyDown: (event) => {
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              event.preventDefault();
+              toggleDetail(kind, event.currentTarget);
+            },
+          }, h('div', { style: { flex: '1 1 auto', minWidth: 0 } }, h(InfoRow, { label, value })));
 
           return h('div', {
             style: { ...SECTION_STYLE, gap: 6 },
-            onMouseLeave: () => setDetail(null),
+            onMouseLeave: () => {
+              if (!pinned) setDetail(null);
+            },
           },
           h(InfoRow, { label: labels.created, value: clockOf(data.createdAt) }),
           h(InfoRow, { label: labels.ended, value: clockOf(data.endedAt) }),
           detailRow('models', labels.models, modelsValue),
+          pinned === 'models' ? detailBody('models', { paddingBottom: 4 }) : null,
           detailRow('tokens', labels.tokens, compactTokens(tokens.total)),
-          detail ? h(HoverCard, {
+          pinned === 'tokens' ? detailBody('tokens', { paddingBottom: 4 }) : null,
+          detail && detail.kind !== pinned ? h(HoverCard, {
             rect: detail.rect,
             width: 272,
             estimated: 120,
-          }, h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            h('span', { style: TYPE.h2 }, detail.kind === 'models' ? labels.models : labels.breakdown),
-            ...detailRows())) : null);
+          }, detailBody(detail.kind)) : null);
         }
 
         ctx.slots.inject('sidebar.session.row.hover', () => ctx.slots.register({

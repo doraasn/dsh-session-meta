@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-meta",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "DSH 插件「会话概览」：鼠标悬停侧栏会话时，显示创建时间、结束时间、涉及模型与累计 token。",
   "type": "module",
   "license": "MIT",
