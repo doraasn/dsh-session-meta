@@ -332,7 +332,6 @@ function createUi(react, createPortal) {
           flex: 1,
           minWidth: 0,
           border: 0,
-          outline: 'none',
           background: 'transparent',
           color: T.text1,
           fontSize: 13,
@@ -375,7 +374,7 @@ function createUi(react, createPortal) {
         border: `.5px solid ${T.cardStroke}`,
         borderRadius: T.radiusXl,
         padding: '12px 14px',
-        boxShadow: '0 12px 32px rgba(0, 0, 0, .45)',
+        boxShadow: 'var(--dsw-elevation-prominent, 0 12px 32px rgba(0, 0, 0, .45))',
         color: T.text1,
       },
     }, children)
@@ -460,7 +459,7 @@ function createUi(react, createPortal) {
           background: T.cardFill,
           border: `.5px solid ${T.cardStroke}`,
           borderRadius: T.radiusMd,
-          boxShadow: '0 12px 32px rgba(0, 0, 0, .45)',
+          boxShadow: 'var(--dsw-elevation-prominent, 0 12px 32px rgba(0, 0, 0, .45))',
         },
       }, options.map((option, index) => h('div', {
         key: option.value,
