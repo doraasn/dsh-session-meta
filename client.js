@@ -757,7 +757,7 @@ function createUi(react, createPortal) {
           };
 
           /**
-           * 可查看明细的一行：鼠标 hover 预览，点击/回车钉住。
+           * 可查看明细的一行：鼠标 hover 预览，点击/回车在行下方展开并钉住。
            * 触屏没有 hover，点击是等价入口；触点按规范给到 32px 高。
            */
           const detailRow = (kind, label, value) => h('div', {
@@ -767,6 +767,7 @@ function createUi(react, createPortal) {
             'aria-expanded': Boolean(detail && detail.kind === kind),
             style: {
               display: 'flex',
+              flexWrap: 'wrap',
               alignItems: 'center',
               minWidth: 0,
               minHeight: 32,
@@ -784,10 +785,11 @@ function createUi(react, createPortal) {
               event.preventDefault();
               toggleDetail(kind, event.currentTarget);
             },
-          }, h('div', { style: { flex: '1 1 auto', minWidth: 0 } }, h(InfoRow, { label, value })));
+          }, h('div', { style: { display: 'flex', flex: '1 1 auto', minWidth: 0 } }, h(InfoRow, { label, value })),
+          pinned === kind ? detailBody(kind, { paddingBottom: 4, flex: '1 1 100%' }) : null);
 
           return h('div', {
-            style: { ...SECTION_STYLE, gap: 6 },
+            style: { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, paddingTop: 8, borderTop: `.5px solid ${T.cardStroke}` },
             onMouseLeave: () => {
               if (!pinned) setDetail(null);
             },
@@ -795,9 +797,7 @@ function createUi(react, createPortal) {
           h(InfoRow, { label: labels.created, value: clockOf(data.createdAt) }),
           h(InfoRow, { label: labels.ended, value: clockOf(data.endedAt) }),
           detailRow('models', labels.models, modelsValue),
-          pinned === 'models' ? detailBody('models', { paddingBottom: 4 }) : null,
           detailRow('tokens', labels.tokens, compactTokens(tokens.total)),
-          pinned === 'tokens' ? detailBody('tokens', { paddingBottom: 4 }) : null,
           detail && detail.kind !== pinned ? h(HoverCard, {
             rect: detail.rect,
             width: 272,
